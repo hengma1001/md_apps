@@ -5,4 +5,6 @@
 """Python Package Template"""
 from __future__ import annotations
 
+from .openmm_apps import omm_simulation
+
 __version__ = "0.0.2"
