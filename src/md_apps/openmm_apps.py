@@ -7,12 +7,12 @@ import openmm.unit as u
 import parmed as pmd
 
 # from .openmm_reporter import ContactMapReporter
-from .utils import build_logger, yml_base
+from .utils import BaseModel, build_logger
 
 logger = build_logger()
 
 
-class omm_simulation(yml_base):
+class omm_simulation:
     """
     Run simulation with OpenMM
 
@@ -95,7 +95,6 @@ class omm_simulation(yml_base):
         custom_force=None,
     ) -> None:
 
-        super().__init__()
         # inputs
         self.pdb_file = pdb_file
         self.top_file = top_file
@@ -134,6 +133,7 @@ class omm_simulation(yml_base):
         pdb = pmd.load_file(self.top_file, xyz=self.pdb_file)
         if not self.explicit_sol:
             system_setup["implicitSolvent"] = app.GBn2
+            system_setup["nonbondedMethod"] = app.NoCutoff
             pdb.box = None
         system = pdb.createSystem(**system_setup)
 
@@ -165,10 +165,10 @@ class omm_simulation(yml_base):
             integrator = omm.VerletIntegrator(self.dt)
 
         try:
-            platform = omm.Platform_getPlatformByName("CUDA")
+            platform = omm.Platform.getPlatform("CUDA")
             properties = {"DeviceIndex": str(self.gpu_id), "CudaPrecision": "mixed"}
         except Exception:
-            platform = omm.Platform_getPlatformByName("OpenCL")
+            platform = omm.Platform.getPlatform("OpenCL")
             properties = {"DeviceIndex": str(self.gpu_id)}
 
         simulation = app.Simulation(self.top.topology, self.system, integrator, platform, properties)
@@ -211,5 +211,9 @@ class omm_simulation(yml_base):
         # clutchy round up method
         nsteps = int(self.sim_time / self.dt + 0.5)
         logger.info(f"  Running simulation for {nsteps} steps. ")
-        self.simulation.step(nsteps)
-        os.chdir(self.base_dir)
+        try:
+            self.simulation.step(nsteps)
+        except Exception as e:
+            logger.error(f"Simulation failed with error: {e}")
+        finally:
+            os.chdir(self.base_dir)

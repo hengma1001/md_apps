@@ -1,8 +1,13 @@
+import json
 import logging
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, TypeVar, Union
 
 import yaml
+from pydantic import BaseModel as _BaseModel
+from pydantic import Field
+
+T = TypeVar("T")
 
 PathLike = Union[str, Path]
 
@@ -23,9 +28,22 @@ def dict_to_yaml(dict_t, yml_file):
         yaml.dump(dict_t, fp, default_flow_style=False)
 
 
-class yml_base(object):
-    def get_setup(self) -> Dict:
-        pass
+class BaseModel(_BaseModel):
+    """Provide an easy interface to read/write YAML files."""
 
-    def dump_yaml(self, cfg_path: PathLike) -> None:
-        dict_to_yaml(self.get_setup(), cfg_path)
+    def dump_yaml(self, filename: str | Path) -> None:
+        """Dump settings to a YAML file."""
+        with open(filename, mode="w") as fp:
+            yaml.dump(
+                json.loads(self.model_dump_json()),
+                fp,
+                indent=4,
+                sort_keys=False,
+            )
+
+    @classmethod
+    def from_yaml(cls: type[T], filename: str | Path) -> T:
+        """Load settings from a YAML file."""
+        with open(filename) as fp:
+            raw_data = yaml.safe_load(fp)
+        return cls(**raw_data)
