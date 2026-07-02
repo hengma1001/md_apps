@@ -1,0 +1,12 @@
+pdb_string: "/nfs/lambda_stor_01/homes/heng.ma/Research/nlrp3/nlrp3/md_runs/smol_screen_2gbi_bms/inputs/input_nlrp3_*/nlrp3_*.inpcrd"
+output_dir: "/nfs/lambda_stor_01/homes/heng.ma/Research/nlrp3/nlrp3/md_runs/smol_screen_2gbi_bms/outputs"
+simulation_config:
+  dt: 2.0
+  explicit_sol: false
+  temperature: 310.0
+  sim_time: 10
+  report_time: 10
+  nonbonded_cutoff: 1.0
+compute_config:
+  name: "workstation"
+  available_accelerators: ["4", "5"]

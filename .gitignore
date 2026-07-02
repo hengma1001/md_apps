@@ -1,3 +1,5 @@
+examples/parsl_runinfo
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
