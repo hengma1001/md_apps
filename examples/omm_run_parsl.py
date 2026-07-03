@@ -52,7 +52,7 @@ async def main() -> None:
 
     signal.signal(signal.SIGTERM, _handle_sigterm)
 
-    pdb_files = glob.glob(cfg.pdb_string)[:2]
+    pdb_files = glob.glob(cfg.pdb_string)[:4]
     logging.info(f"Found {len(pdb_files)} PDB files to simulate: {pdb_files}")
 
     with spawn_http_exchange(
@@ -66,7 +66,7 @@ async def main() -> None:
             ) as manager:
 
                 # Spawn a simulation agent for each PDB file
-                n_runs = len(pdb_files)
+                n_workers = 2
                 sim_agents = await asyncio.gather(
                     *[
                         manager.launch(
@@ -76,12 +76,15 @@ async def main() -> None:
                                 "output_dir": cfg.output_dir,
                             },
                         )
-                        for _ in range(n_runs)
+                        for _ in range(n_workers)
                     ]
                 )
 
                 results = await asyncio.gather(
-                    *[agent.simulate(Path(pdb_files[i])) for i, agent in enumerate(sim_agents)]
+                    *[
+                        agent.simulate([Path(pdb_file) for pdb_file in pdb_files[i::n_workers]])
+                        for i, agent in enumerate(sim_agents)
+                    ]
                 )
                 logging.info(f"Simulation results: {results}")
 

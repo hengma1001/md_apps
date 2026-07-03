@@ -9,6 +9,7 @@ from academy.handle import Handle
 from pydantic import BaseModel
 
 from md_apps import omm_simulation
+from md_apps.utils import dict_to_yaml
 
 # from academy.manager import Manager
 
@@ -76,19 +77,17 @@ class SimulationAgent(Agent, ABC):
         ...
 
     @action
-    async def simulate(self, pdb_file: Path) -> Path:
+    async def simulate(self, pdb_files: list[Path]) -> list[Path]:
         """Run the simulation and send result."""
-        self.logger.info(f"running sim {pdb_file.name} ")
+        run_paths = []
+        for pdb_file in pdb_files:
+            self.logger.info(f"running sim {pdb_file.name} ")
 
-        # Wait for the restart file to be available before running the
-        # simulation. Handles NFS caching issues where the file may not be
-        # immediately visible
-
-        # Run the simulation in a thread to avoid blocking the event loop
-        run_path = await self.agent_run_sync(self.run_simulation, pdb_file)
-
-        self.logger.info(f"sim {pdb_file.name} complete")
-        return run_path
+            # Run the simulation in a thread to avoid blocking the event loop
+            run_path = await self.agent_run_sync(self.run_simulation, pdb_file)
+            run_paths += [Path(run_path)]
+            self.logger.info(f"sim {pdb_file.name} complete")
+        return run_paths
 
 
 class OpenMMSimulationAgent(SimulationAgent):
@@ -125,6 +124,10 @@ class OpenMMSimulationAgent(SimulationAgent):
         self.logger.info(f"Running OpenMM simulation for {pdb_file} with top file {top_file}")
 
         run_path = f"{self.output_dir}/{pdb_file.stem}_run"
+        sim_config = f"{run_path}/sim_config.yaml"
+        if Path(sim_config).exists():
+            self.logger.info(f"Simulation config {sim_config} already exists. Skipping simulation.")
+            return Path(run_path)
 
         omm_run = omm_simulation(
             str(pdb_file),
@@ -133,4 +136,5 @@ class OpenMMSimulationAgent(SimulationAgent):
         )
         omm_run.run_sim(path=run_path)
 
+        dict_to_yaml(omm_run.get_setup(), f"{run_path}/sim_config.yaml")
         return Path(run_path)
