@@ -51,8 +51,8 @@ class SimulationAgent(Agent, ABC):
         model). Always call ``await super().agent_on_startup()``
         first.
         """
-        self.logger = logging.getLogger(type(self).__name__)
-        self.logger.info("started")
+        # logging = logging.getLogger(type(self).__name__)
+        logging.info("started")
 
     @abstractmethod
     def run_simulation(self, pdb_file: Path) -> Path:
@@ -81,12 +81,12 @@ class SimulationAgent(Agent, ABC):
         """Run the simulation and send result."""
         run_paths = []
         for pdb_file in pdb_files:
-            self.logger.info(f"running sim {pdb_file.name} ")
+            logging.info(f"running sim {pdb_file.name} ")
 
             # Run the simulation in a thread to avoid blocking the event loop
             run_path = await self.agent_run_sync(self.run_simulation, pdb_file)
             run_paths += [Path(run_path)]
-            self.logger.info(f"sim {pdb_file.name} complete")
+            logging.info(f"sim {pdb_file.name} complete")
         return run_paths
 
 
@@ -121,18 +121,18 @@ class OpenMMSimulationAgent(SimulationAgent):
             The simulation result path
         """
         top_file = str(pdb_file).replace(".inpcrd", ".prmtop")
-        self.logger.info(f"Running OpenMM simulation for {pdb_file} with top file {top_file}")
+        logging.info(f"Running OpenMM simulation for {pdb_file} with top file {top_file}")
 
         run_path = f"{self.output_dir}/{pdb_file.stem}_run"
         sim_config = f"{run_path}/sim_config.yaml"
         if Path(sim_config).exists():
-            self.logger.info(f"Simulation config {sim_config} already exists. Skipping simulation.")
+            logging.info(f"Simulation config {sim_config} already exists. Skipping simulation.")
             return Path(run_path)
 
         omm_run = omm_simulation(
             str(pdb_file),
             top_file,
-            **self.sim_config.__dict__,
+            **self.sim_config,
         )
         omm_run.run_sim(path=run_path)
 

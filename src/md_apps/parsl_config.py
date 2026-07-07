@@ -226,7 +226,7 @@ class AuroraConfig(BaseComputeConfig):
     strategy: str = "simple"
     available_accelerators: list[str] = [str(i) for i in range(12)]
 
-    def config_factory(self, run_dir: str | Path) -> Config:
+    def get_parsl_config(self, run_dir: str | Path) -> Config:
         """Create a Parsl configuration for running on Aurora."""
         return Config(
             executors=[
