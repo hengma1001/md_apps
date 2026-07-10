@@ -47,20 +47,19 @@ Scaling MD runs
     pdb_string: "/lus/flare/projects/FRAME-IDP/yuzhang/0k0000w/input_*/*inpcrd"
     output_dir: "/lus/flare/projects/FRAME-IDP/hengma/trpb/md_runs/md_sim/outputs"
     simulation_config:
-    dt: 2.0
-    temperature: 310.0
-    sim_time: 0.1
-    report_time: 10
-    nonbonded_cutoff: 1.0
-    pressure: 1.0
+        dt: 2.0
+        temperature: 310.0
+        sim_time: 0.1
+        report_time: 10
+        nonbonded_cutoff: 1.0
+        pressure: 1.0
     compute_config:
-    name: "aurora"
-    num_nodes: 2
-    account: "FRAME-IDP"
-    queue: "debug-scaling"
-    walltime: "1:00:00"
-    scheduler_options: "#PBS -l filesystems=home:flare"
-    worker_init: "module load frameworks; source /lus/flare/projects/FRAME-IDP/hengma/envs/agent/bin/activate; export TMPDIR=/tmp; export ZE_FLAT_DEVICE_HIERARCHY=FLAT "
-
+        name: "aurora"
+        num_nodes: 2
+        account: "FRAME-IDP"
+        queue: "debug-scaling"
+        walltime: "1:00:00"
+        scheduler_options: "#PBS -l filesystems=home:flare"
+        worker_init: "module load frameworks; source /lus/flare/projects/FRAME-IDP/hengma/envs/agent/bin/activate; export TMPDIR=/tmp; export ZE_FLAT_DEVICE_HIERARCHY=FLAT "
     ```
 
