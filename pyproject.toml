@@ -18,6 +18,11 @@ classifiers = [
 ]
 requires-python = ">=3.10.1"
 dynamic = ["version"]
+dependencies = [
+    "parmed",
+    "pyyaml",
+    "pydantic",
+]
 
 [project.optional-dependencies]
 spark = ["pyspark>=3.0.0"]
